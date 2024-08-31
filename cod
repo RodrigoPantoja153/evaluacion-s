@@ -1,0 +1,77 @@
+from ncclient import manager
+import getpass
+
+host = "devnetsandboxiosxe.cisco.com"
+username = "admin"
+password = "Cisco12345"
+new_hostname = "NUEVONOMBRE"
+
+with manager.connect(host=host, port=830, username=username, password=password, hostkey_verify=False) as m:
+   
+    config = f"""
+    <config>
+        <cli-config-data>
+            <cmd>hostname {new_hostname}</cmd>
+        </cli-config-data>
+    </config>
+    """
+
+    response = m.edit_config(target='running', config=config)
+    
+-----------------------------------------------------------------------------------------------------------------
+
+import requests
+from requests.auth import HTTPBasicAuth
+import getpass
+
+host = "devnetsandboxiosxe.cisco.com"
+username = "admin"
+password = "Cisco12345"
+interface_id = "GigabitEthernet1"
+
+url = f"https://{host}/restconf/data/ietf-interfaces:interfaces/interface={interface_id}"
+response = requests.get(url, auth=HTTPBasicAuth(username, password), verify=False)
+
+if response.status_code == 200:
+    interface_info = response.json()
+    name = interface_info['ietf-interfaces:interface']['name']
+    ipv4_address = interface_info['ietf-interfaces:interface']['ietf-ip:ipv4']['addresses']['address'][0]['ip']
+
+-----------------------------------------------------------------------------------------------------------------
+
+import requests
+from requests.auth import HTTPBasicAuth
+import json
+import getpass
+
+host = "devnetsandboxiosxe.cisco.com"
+username = "admin"
+password = "Cisco12345"
+loopback_id = "Loopback100"
+ipv4_address = "192.168.1.1"
+
+data = {
+    "ietf-interfaces:interface": {
+        "name": loopback_id,
+        "type": "iana-if-type:softwareLoopback",
+        "ietf-ip:ipv4": {
+            "addresses": {
+                "address": [
+                    {
+                        "ip": ipv4_address,
+                        "netmask": "255.255.255.0"
+                    }
+                ]
+            }
+        }
+    }
+}
+
+
+url = f"https://{host}/restconf/data/ietf-interfaces:interfaces"
+headers = {'Content-Type': 'application/yang-data+json'}
+response = requests.post(url, auth=HTTPBasicAuth(username, password), headers=headers, data=json.dumps(data), verify=False)
+
+if response.status_code == 201:
+
+Interfaz Loopback creada exitosamente      
